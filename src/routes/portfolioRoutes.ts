@@ -32,12 +32,13 @@ router.post(
   "/",
   upload.fields([
     { name: "profileImage", maxCount: 1 },
+    { name: "resume", maxCount: 1 },
     { name: "projectImages", maxCount: 10 },
   ]),
   createPortfolio
 );
 
 // public portfolio page
-router.get("/:slug", getPortfolioPage);
+// router.get("/:slug", getPortfolioPage);
 
 export default router;

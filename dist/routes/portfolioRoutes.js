@@ -29,8 +29,9 @@ const upload = (0, multer_1.default)({ storage });
  */
 router.post("/", upload.fields([
     { name: "profileImage", maxCount: 1 },
+    { name: "resume", maxCount: 1 },
     { name: "projectImages", maxCount: 10 },
 ]), portfolioController_1.createPortfolio);
 // public portfolio page
-router.get("/:slug", portfolioController_1.getPortfolioPage);
+// router.get("/:slug", getPortfolioPage);
 exports.default = router;
