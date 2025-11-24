@@ -1,17 +1,25 @@
 import { Router } from "express";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
+
 import {
   createPortfolio,
   getPortfolioPage,
 } from "../controllers/portfolioController";
-import fs from "fs";
 
 const router = Router();
-const uploadDir = path.join(__dirname, "..", "uploads");
+
+// ----------------------
+// FIX 1 — Correct upload directory
+// Save inside PROJECT ROOT → "/uploads"
+const uploadDir = path.join(process.cwd(), "uploads");
+
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
-// configure multer
+// ----------------------
+// Multer storage
+// ----------------------
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => {
@@ -22,23 +30,19 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-/**
- * Expected multipart/form-data:
- * - profileImage: single
- * - projectImages: multiple (order should match projects array)
- * - fields: name, about, qualification, experience, projects (JSON string), linkedin, github, template
- */
+// ----------------------
+// Routes
+// ----------------------
 router.post(
   "/",
   upload.fields([
     { name: "profileImage", maxCount: 1 },
     { name: "resume", maxCount: 1 },
-    { name: "projectImages", maxCount: 10 },
+    { name: "projectImages", maxCount: 20 },
   ]),
   createPortfolio
 );
 
-// public portfolio page
 // router.get("/:slug", getPortfolioPage);
 
 export default router;

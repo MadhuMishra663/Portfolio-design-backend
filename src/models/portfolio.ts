@@ -1,31 +1,81 @@
-import mongoose, { Schema } from "mongoose";
+// src/models/portfolio.ts
+import mongoose, { Document, Schema } from "mongoose";
 
-const ProjectSchema = new Schema({
-  title: String,
-  description: String,
-  imageUrl: String,
-});
+export interface IProject {
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  github?: string;
+  live?: string;
+}
 
-const PortfolioSchema = new Schema({
-  name: { type: String, required: true },
-  about: String,
-  qualification: String,
-  profileImageUrl: String,
-  experience: String,
-  resumeUrl: String,
-  interests: [String],
-  skills: [String],
-  contacts: [String],
-  role: String,
-  quote: String,
-  projects: [ProjectSchema],
-  email: { type: String, required: true },
+export interface IPortfolio extends Document {
+  name: string;
+  about?: string;
+  email?: string;
+  qualification?: string;
+  profileImageUrl?: string;
+  resumeUrl?: string;
+  projects: IProject[];
+  linkedin?: string;
+  github?:
+    | {
+        heatmap?: string;
+        streak?: string;
+        langs?: string;
+      }
+    | string;
+  template?: string;
+  slug?: string;
+  role?: string;
+  quote?: string;
+  footer?: string;
+  logoUrl?: string;
+  interests: string[];
+  skills: string[];
+  contacts: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
-  linkedin: String,
-  github: String,
-  template: { type: String, default: "template1" },
-  slug: { type: String, unique: true },
-  createdAt: { type: Date, default: Date.now },
-});
+const ProjectSchema = new Schema<IProject>(
+  {
+    title: { type: String, default: "" },
+    description: { type: String, default: "" },
+    imageUrl: { type: String, default: "" },
+    github: { type: String, default: "" },
+    live: { type: String, default: "" },
+  },
+  { _id: false }
+);
 
-export default mongoose.model("portfolio", PortfolioSchema);
+const PortfolioSchema = new Schema<IPortfolio>(
+  {
+    name: { type: String, required: true },
+    about: { type: String, default: "" },
+    email: { type: String, default: "" },
+    qualification: { type: String, default: "" },
+    profileImageUrl: { type: String, default: "" },
+    resumeUrl: { type: String, default: "" },
+    projects: { type: [ProjectSchema], default: [] },
+    linkedin: { type: String, default: "" },
+    github: { type: Schema.Types.Mixed, default: {} }, // can be object or string
+    template: { type: String, default: "template1" },
+    slug: { type: String, index: true, unique: true },
+    role: { type: String, default: "" },
+    quote: { type: String, default: "" },
+    footer: { type: String, default: "" },
+    logoUrl: { type: String, default: "" },
+    interests: { type: [String], default: [] },
+    skills: { type: [String], default: [] },
+    contacts: { type: [String], default: [] },
+  },
+  { timestamps: true }
+);
+
+// Prevent model overwrite upon hot reload in dev
+const Portfolio =
+  (mongoose.models.Portfolio as mongoose.Model<IPortfolio>) ||
+  mongoose.model<IPortfolio>("Portfolio", PortfolioSchema);
+
+export default Portfolio;

@@ -8,6 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 export const signup = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
+    console.log("[SIGNUP] req.body:", req.body);
 
     if (!name || !email || !password)
       return res.status(400).json({ error: "All fields are required" });
