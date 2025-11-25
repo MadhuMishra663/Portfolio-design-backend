@@ -33,30 +33,36 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+// src/models/portfolio.ts
 const mongoose_1 = __importStar(require("mongoose"));
 const ProjectSchema = new mongoose_1.Schema({
-    title: String,
-    description: String,
-    imageUrl: String,
-});
+    title: { type: String, default: "" },
+    description: { type: String, default: "" },
+    imageUrl: { type: String, default: "" },
+    github: { type: String, default: "" },
+    live: { type: String, default: "" },
+}, { _id: false });
 const PortfolioSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
-    about: String,
-    qualification: String,
-    profileImageUrl: String,
-    experience: String,
-    resumeUrl: String,
-    interests: [String],
-    skills: [String],
-    contacts: [String],
-    role: String,
-    quote: String,
-    projects: [ProjectSchema],
-    email: { type: String, required: true },
-    linkedin: String,
-    github: String,
+    about: { type: String, default: "" },
+    email: { type: String, default: "" },
+    qualification: { type: String, default: "" },
+    profileImageUrl: { type: String, default: "" },
+    resumeUrl: { type: String, default: "" },
+    projects: { type: [ProjectSchema], default: [] },
+    linkedin: { type: String, default: "" },
+    github: { type: mongoose_1.Schema.Types.Mixed, default: {} }, // can be object or string
     template: { type: String, default: "template1" },
-    slug: { type: String, unique: true },
-    createdAt: { type: Date, default: Date.now },
-});
-exports.default = mongoose_1.default.model("portfolio", PortfolioSchema);
+    slug: { type: String, index: true, unique: true },
+    role: { type: String, default: "" },
+    quote: { type: String, default: "" },
+    footer: { type: String, default: "" },
+    logoUrl: { type: String, default: "" },
+    interests: { type: [String], default: [] },
+    skills: { type: [String], default: [] },
+    contacts: { type: [String], default: [] },
+}, { timestamps: true });
+// Prevent model overwrite upon hot reload in dev
+const Portfolio = mongoose_1.default.models.Portfolio ||
+    mongoose_1.default.model("Portfolio", PortfolioSchema);
+exports.default = Portfolio;

@@ -5,6 +5,7 @@ import { makeSlug } from "../utils/slugify";
 import path from "path";
 import nodemailer from "nodemailer";
 import { Contact } from "../models/contacts";
+import util from "util";
 
 const UPLOAD_DIR = path.join(__dirname, "..", "uploads");
 const BASE =
@@ -51,8 +52,11 @@ function parseStringArrayField(value: unknown): string[] {
  */
 export const createPortfolio = async (req: Request, res: Response) => {
   try {
-    console.log("FILES RECEIVED:", req.files);
-    console.log("BODY RECEIVED:", req.body);
+    console.log(
+      "FILES RECEIVED:",
+      util.inspect(req.files, { depth: 4, colors: true })
+    );
+
     const {
       name,
       about,
@@ -183,13 +187,15 @@ export const getPortfolioPage = async (req: Request, res: Response) => {
     const resumePublicUrl = portfolio.resumeUrl
       ? `${BASE}${portfolio.resumeUrl}`
       : "";
+    const downloadUrl = `${BASE}/api/portfolios/download/${slug}/resume`;
 
     return res.render(portfolio.template ?? "template1", {
       ...portfolio,
       interests,
       skills,
       contacts,
-      resumeUrl: resumePublicUrl,
+      resumeUrl: portfolio.resumeUrl ? `${BASE}${portfolio.resumeUrl}` : "",
+      downloadUrl,
       profileImageUrl: portfolio.profileImageUrl || "",
       role: portfolio.role || "Fullstack Developer",
       quote: portfolio.quote || "I am nothing but I can do everything",

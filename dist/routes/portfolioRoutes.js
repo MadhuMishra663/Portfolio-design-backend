@@ -6,13 +6,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
-const portfolioController_1 = require("../controllers/portfolioController");
 const fs_1 = __importDefault(require("fs"));
+const portfolioController_1 = require("../controllers/portfolioController");
 const router = (0, express_1.Router)();
-const uploadDir = path_1.default.join(__dirname, "..", "uploads");
+// ----------------------
+// FIX 1 — Correct upload directory
+// Save inside PROJECT ROOT → "/uploads"
+const uploadDir = path_1.default.join(process.cwd(), "uploads");
 if (!fs_1.default.existsSync(uploadDir))
     fs_1.default.mkdirSync(uploadDir);
-// configure multer
+// ----------------------
+// Multer storage
+// ----------------------
 const storage = multer_1.default.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => {
@@ -21,17 +26,14 @@ const storage = multer_1.default.diskStorage({
     },
 });
 const upload = (0, multer_1.default)({ storage });
-/**
- * Expected multipart/form-data:
- * - profileImage: single
- * - projectImages: multiple (order should match projects array)
- * - fields: name, about, qualification, experience, projects (JSON string), linkedin, github, template
- */
+router.get("/download/:slug/resume", portfolioController_1.downloadResume);
+// ----------------------
+// Routes
+// ----------------------
 router.post("/", upload.fields([
     { name: "profileImage", maxCount: 1 },
     { name: "resume", maxCount: 1 },
-    { name: "projectImages", maxCount: 10 },
+    { name: "projectImages", maxCount: 20 },
 ]), portfolioController_1.createPortfolio);
-// public portfolio page
 // router.get("/:slug", getPortfolioPage);
 exports.default = router;
