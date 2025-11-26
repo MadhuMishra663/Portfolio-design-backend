@@ -52,9 +52,10 @@ function parseStringArrayField(value: unknown): string[] {
  */
 export const createPortfolio = async (req: Request, res: Response) => {
   try {
+    console.log("FILES KEYS:", Object.keys(req.files || {}));
     console.log(
-      "FILES RECEIVED:",
-      util.inspect(req.files, { depth: 4, colors: true })
+      "PROFILE IMAGE FILE:",
+      util.inspect((req.files as any)?.profileImage?.[0], { depth: 2 })
     );
 
     const {
@@ -78,55 +79,75 @@ export const createPortfolio = async (req: Request, res: Response) => {
 
     if (!name) return res.status(400).json({ error: "Name is required" });
 
-    // multer-style typing for req.files
     const files = req.files as
       | Record<string, Express.Multer.File[]>
       | undefined;
 
-    // profile image
+    // -----------------------------
+    // PROFILE IMAGE
+    // -----------------------------
     let profileImageUrl = "";
     if (files?.profileImage?.length) {
       profileImageUrl = `/uploads/${files.profileImage[0].filename}`;
     }
 
-    // parse projects - may be stringified JSON or an array already
+    // -----------------------------
+    // PARSE PROJECTS
+    // -----------------------------
     let projectsArray: IProject[] = [];
     if (projects) {
       projectsArray =
         typeof projects === "string" ? JSON.parse(projects) : projects;
     }
 
+    // -----------------------------
+    // RESUME FILE
+    // -----------------------------
     // resume
     let resumeUrl = "";
-    if (files && files.resume && files.resume.length > 0) {
-      resumeUrl = `/uploads/${files.resume[0].filename}`;
+    let resumePath = "";
+
+    if (files?.resume?.length) {
+      const file = files.resume[0];
+
+      resumeUrl = `/uploads/${file.filename}`;
+      resumePath = path.join(process.cwd(), "uploads", file.filename);
     }
 
-    // attach uploaded project images (map by index)
+    // -----------------------------
+    // PROJECT IMAGES
+    // -----------------------------
     if (files?.projectImages?.length) {
       const uploaded = files.projectImages;
       for (let i = 0; i < uploaded.length; i++) {
-        const file = uploaded[i];
         if (!projectsArray[i]) projectsArray[i] = {} as IProject;
-        projectsArray[i].imageUrl = `/uploads/${file.filename}`;
+
+        projectsArray[i].imageUrl = `/uploads/${uploaded[i].filename}`;
       }
     }
 
-    // interests / skills / contacts normalization
+    // -----------------------------
+    // NORMALIZE ARRAYS
+    // -----------------------------
     const parsedInterests = parseStringArrayField(interests);
     const parsedSkills = parseStringArrayField(skills);
     const parsedContacts = parseStringArrayField(contacts);
 
     const slug = makeSlug(name);
 
-    // build payload
+    // -----------------------------
+    // BUILD PAYLOAD (NOW WITH resumePath)
+    // -----------------------------
     const payload: Partial<IPortfolio> = {
       name,
       about,
       email,
       qualification,
       profileImageUrl,
+
       resumeUrl,
+      resumePath,
+
       projects: projectsArray,
       linkedin,
       github,
@@ -158,6 +179,58 @@ export const createPortfolio = async (req: Request, res: Response) => {
  * Ensure you configured `app.set('views', path.join(__dirname, 'templates'))`
  * and `app.set('view engine', 'ejs')` in your app bootstrap.
  */
+// export const getPortfolioPage = async (req: Request, res: Response) => {
+//   try {
+//     const slug = req.params.slug;
+//     const portfolio = (await Portfolio.findOne({ slug }).lean()) as
+//       | (IPortfolio & { createdAt?: Date; updatedAt?: Date })
+//       | null;
+
+//     if (!portfolio) return res.status(404).send("Portfolio not found");
+
+//     // Normalize arrays
+//     const interests = Array.isArray(portfolio.interests)
+//       ? portfolio.interests
+//       : parseStringArrayField((portfolio as any).interests);
+//     const skills = Array.isArray(portfolio.skills)
+//       ? portfolio.skills
+//       : parseStringArrayField((portfolio as any).skills);
+//     const contacts = Array.isArray(portfolio.contacts)
+//       ? portfolio.contacts
+//       : parseStringArrayField((portfolio as any).contacts);
+
+//     const githubData =
+//       typeof portfolio.github === "object" && portfolio.github !== null
+//         ? portfolio.github
+//         : { heatmap: "", streak: "", langs: "" };
+
+//     // build absolute resume URL for template (or empty string)
+//     const resumePublicUrl = portfolio.resumeUrl
+//       ? `${BASE}${portfolio.resumeUrl}`
+//       : "";
+//     const downloadUrl = `${BASE}/api/portfolios/download/${slug}/resume`;
+
+//     return res.render(portfolio.template ?? "template1", {
+//       ...portfolio,
+//       interests,
+//       skills,
+//       contacts,
+//       resumeUrl: portfolio.resumeUrl ? `${BASE}${portfolio.resumeUrl}` : "",
+//       downloadUrl,
+//       profileImageUrl: portfolio.profileImageUrl || "",
+//       role: portfolio.role || "Fullstack Developer",
+//       quote: portfolio.quote || "I am nothing but I can do everything",
+//       footer:
+//         portfolio.footer ?? `© ${new Date().getFullYear()} Portfolio designer`,
+//       logoUrl: portfolio.logoUrl ?? "",
+//       github: githubData,
+//     });
+//   } catch (err) {
+//     console.error("getPortfolioPage error:", err);
+//     return res.status(500).send("Server error");
+//   }
+// };
+
 export const getPortfolioPage = async (req: Request, res: Response) => {
   try {
     const slug = req.params.slug;
@@ -183,10 +256,20 @@ export const getPortfolioPage = async (req: Request, res: Response) => {
         ? portfolio.github
         : { heatmap: "", streak: "", langs: "" };
 
-    // build absolute resume URL for template (or empty string)
+    // Build absolute public URLs for files (if present)
     const resumePublicUrl = portfolio.resumeUrl
       ? `${BASE}${portfolio.resumeUrl}`
       : "";
+    const profilePublicUrl = portfolio.profileImageUrl
+      ? `${BASE}${portfolio.profileImageUrl}`
+      : "";
+
+    // Ensure projects have full URLs for imageUrl (and keep other fields)
+    const projectsWithUrls = (portfolio.projects || []).map((proj: any) => ({
+      ...proj,
+      imageUrl: proj.imageUrl ? `${BASE}${proj.imageUrl}` : "",
+    }));
+
     const downloadUrl = `${BASE}/api/portfolios/download/${slug}/resume`;
 
     return res.render(portfolio.template ?? "template1", {
@@ -194,9 +277,10 @@ export const getPortfolioPage = async (req: Request, res: Response) => {
       interests,
       skills,
       contacts,
-      resumeUrl: portfolio.resumeUrl ? `${BASE}${portfolio.resumeUrl}` : "",
+      resumeUrl: resumePublicUrl,
       downloadUrl,
-      profileImageUrl: portfolio.profileImageUrl || "",
+      profileImageUrl: profilePublicUrl,
+      projects: projectsWithUrls,
       role: portfolio.role || "Fullstack Developer",
       quote: portfolio.quote || "I am nothing but I can do everything",
       footer:
@@ -216,6 +300,7 @@ export const getPortfolioPage = async (req: Request, res: Response) => {
  * This sends the resume file with proper Content-Disposition to force download.
  * Make sure this route is registered after your controllers in your router.
  */
+// safer downloadResume - use resumePath if present
 export const downloadResume = async (req: Request, res: Response) => {
   try {
     const slug = req.params.slug;
@@ -223,14 +308,25 @@ export const downloadResume = async (req: Request, res: Response) => {
     if (!portfolio || !portfolio.resumeUrl)
       return res.status(404).send("Resume not found");
 
-    // resumeUrl is like "/uploads/<filename>"
-    const resumePath = path.join(__dirname, "..", portfolio.resumeUrl);
-    const fileName = `${portfolio.name?.replace(/\s+/g, "_") || "resume"}.pdf`;
+    // Prefer resumePath if stored (absolute path pointing to file on disk)
+    let resumePath = (portfolio as any).resumePath as string | undefined;
+
+    if (resumePath) {
+      // Ensure it's absolute
+      resumePath = path.resolve(resumePath);
+    } else {
+      // Fallback — build path relative to project root
+      resumePath = path.join(
+        process.cwd(),
+        portfolio.resumeUrl.replace(/^\//, "")
+      );
+    }
+
+    const fileName = `${(portfolio.name || "resume").replace(/\s+/g, "_")}.pdf`;
 
     return res.download(resumePath, fileName, (err) => {
       if (err) {
         console.error("downloadResume error:", err);
-        // If file not found, send 404
         if ((err as NodeJS.ErrnoException).code === "ENOENT") {
           return res.status(404).send("File not found");
         }
@@ -251,9 +347,11 @@ export const submitContact = async (req: Request, res: Response) => {
     const { slug } = req.params;
     const { name, email, message } = req.body;
 
-    const portfolioDoc = await Portfolio.findOne({ slug });
+    // 1. Find portfolio owner
+    const portfolioDoc = await Portfolio.findOne({ slug }).lean();
     if (!portfolioDoc) return res.status(404).send("Portfolio not found");
 
+    // 2. Save message in DB
     await Contact.create({
       portfolioId: portfolioDoc._id,
       name,
@@ -261,31 +359,40 @@ export const submitContact = async (req: Request, res: Response) => {
       message,
     });
 
+    // 3. Owner email (the login person's email)
+    const ownerEmail = portfolioDoc.email;
+    if (!ownerEmail) {
+      return res.status(500).send("Portfolio owner email not found.");
+    }
+
+    // 4. Email sender config
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
     });
 
+    // 5. Email content
     const emailHTML = `
       <h2>New Portfolio Message</h2>
       <p><strong>Name:</strong> ${name}</p>
       <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Message:</strong><br/> ${message}</p>
-
-      <h3>Portfolio Summary</h3>
-      <pre>${JSON.stringify(portfolioDoc, null, 2)}</pre>
+      <p><strong>Message:</strong><br/>${message}</p>
     `;
 
+    // 6. Send email to portfolio owner
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: (portfolioDoc as any).email || process.env.EMAIL_USER,
+      to: ownerEmail, // **THIS IS THE IMPORTANT PART**
       subject: "New Message From Your Portfolio",
       html: emailHTML,
     });
 
-    res.send("Message sent successfully!");
+    return res.send("Message sent successfully!");
   } catch (err) {
     console.error("submitContact error:", err);
-    res.status(500).send("Email error");
+    return res.status(500).send("Email error");
   }
 };

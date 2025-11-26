@@ -13,23 +13,38 @@
 
     <style>
       /* ---------------- GLOBAL ---------------- */
+      :root {
+        --bg: #0d1224;
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --accent: #6c7dff;
+        --muted: #c5cee8;
+        --panel: #0f1a33;
+      }
+
+      html,
       body {
+        height: 100%;
         margin: 0;
-        background: #0d1224;
+        background: linear-gradient(180deg, var(--bg), #0b1020 120%);
         font-family: "Poppins", sans-serif;
         color: white;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
+
+      /* fluid container that centers content */
       .container {
-        width: 90%;
+        width: 92%;
         max-width: 1100px;
-        margin: auto;
+        margin: 0 auto;
+        box-sizing: border-box;
       }
 
       /* HEADER */
       .header {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
-        padding: 15px 0;
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        padding: 12px 0;
         position: sticky;
         top: 0;
         z-index: 100;
@@ -38,68 +53,124 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 12px;
       }
       .logo {
-        font-size: 26px;
+        font-size: 24px;
         color: #7d95ff;
         font-weight: 700;
+        margin: 0;
+        white-space: nowrap;
+      }
+
+      /* responsive nav: on wide screens items inline, on small screens wrap */
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap; /* allows items to wrap on small screens */
       }
       .nav a {
-        margin-left: 20px;
+        margin-left: 12px;
         text-decoration: none;
         color: #d0d6ff;
+        font-weight: 600;
+        padding: 8px 10px;
+        border-radius: 8px;
       }
       .nav a:hover {
         color: white;
+        background: rgba(255, 255, 255, 0.02);
       }
 
       .btn {
-        background: #6d73ff;
-        padding: 10px 18px;
+        background: var(--accent);
+        padding: 8px 14px;
         border-radius: 10px;
         color: white;
         text-decoration: none;
+        border: none;
+        display: inline-block;
       }
       .btn:hover {
-        opacity: 0.8;
+        opacity: 0.9;
       }
       .outline {
         background: transparent;
-        border: 2px solid #6d73ff;
+        border: 2px solid var(--accent);
       }
 
       /* HERO */
       .hero {
-        padding: 80px 0;
+        padding: 56px 0;
       }
+
+      /* hero-flex uses CSS grid to allow better responsive stacking */
       .hero-flex {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 28px;
+        align-items: start;
       }
-      .hero-img {
-        width: 300px;
-        border-radius: 12px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+
+      .hero-left h2 {
+        margin: 0 0 8px 0;
+        font-size: 28px;
+        line-height: 1.05;
       }
-      .accent {
-        color: #6c7dff;
+
+      .typing {
+        margin: 6px 0 12px 0;
+        font-size: 18px;
+        color: var(--muted);
       }
+
       .quote {
-        opacity: 0.75;
+        opacity: 0.85;
+        color: #d6dbf8;
+      }
+
+      /* make the message form look tidy */
+      form {
+        margin-top: 14px;
+      }
+      form input[type="text"],
+      form input[type="email"],
+      form textarea {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border-radius: 8px;
+        border: none;
+        box-sizing: border-box;
+        background: rgba(255, 255, 255, 0.02);
+        color: white;
+        resize: vertical;
+      }
+      form textarea {
+        min-height: 110px;
+      }
+
+      .hero-img {
+        width: 100%;
+        max-width: 340px;
+        border-radius: 12px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+        display: block;
+        object-fit: cover;
+        height: auto;
       }
 
       /* SECTIONS */
       .section {
-        margin: 60px 0;
-        background: rgba(255, 255, 255, 0.03);
-        padding: 30px;
+        margin: 48px 0;
+        background: var(--card-bg);
+        padding: 22px;
         border-radius: 12px;
       }
       .section-title {
-        font-size: 26px;
-        margin-bottom: 15px;
+        font-size: 22px;
+        margin-bottom: 12px;
       }
 
       /* INTERESTS */
@@ -107,70 +178,148 @@
         list-style: none;
         padding: 0;
         display: flex;
-        gap: 12px;
+        gap: 10px;
         flex-wrap: wrap;
+        margin: 0;
+      }
+      .interests li {
+        background: rgba(255, 255, 255, 0.02);
+        padding: 8px 12px;
+        border-radius: 999px;
+        color: var(--muted);
+        font-weight: 600;
       }
 
       /* SKILLS */
       .skills-grid {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 10px;
       }
       .skill {
         padding: 8px 14px;
-        background: #101830;
+        background: #0b1830;
         border-radius: 8px;
+        color: var(--muted);
       }
 
       /* PROJECTS */
       .projects-grid {
         display: grid;
         gap: 18px;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       }
       .project-card {
-        background: #111a35;
-        border-radius: 12px;
+        background: #0c1730;
+        border-radius: 10px;
         overflow: hidden;
-        transition: 0.3s;
+        transition: transform 220ms ease, box-shadow 220ms ease;
+        display: flex;
+        flex-direction: column;
       }
       .project-card:hover {
         transform: translateY(-8px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
       }
       .project-img {
         width: 100%;
         height: 160px;
         object-fit: cover;
+        display: block;
       }
       .project-content {
-        padding: 15px;
+        padding: 12px;
+        flex: 1 1 auto;
       }
       .proj-links a {
         margin-right: 12px;
         color: #8ca2ff;
         text-decoration: none;
-      }
-
-      /* STATS */
-      .stats-img {
-        width: 100%;
-        margin-top: 12px;
-        border-radius: 12px;
+        font-weight: 700;
       }
 
       /* CONTACT */
       .contact-links a {
-        margin-right: 20px;
+        margin-right: 12px;
         color: #8ca2ff;
         text-decoration: none;
+        display: inline-block;
+        margin-bottom: 8px;
       }
 
-      /* FOOTER */
-      .footer {
-        text-align: center;
-        opacity: 0.6;
-        padding: 25px 0;
+      /* small screens: stack columns, tighten spacing */
+      @media (max-width: 900px) {
+        .hero {
+          padding: 32px 0;
+        }
+        .hero-flex {
+          grid-template-columns: 1fr;
+        }
+        .hero-img {
+          max-width: 100%;
+          height: 260px;
+          margin: 6px 0 0 0;
+        }
+        .header-flex {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 8px;
+        }
+        .nav {
+          justify-content: space-between;
+          gap: 6px;
+        }
+        .nav a {
+          padding: 6px 8px;
+          font-size: 14px;
+        }
+
+        .container {
+          width: 95%;
+        }
+
+        .section {
+          padding: 16px;
+        }
+
+        .projects-grid {
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 14px;
+        }
+      }
+
+      /* very small screens */
+      @media (max-width: 480px) {
+        .logo {
+          font-size: 20px;
+        }
+        .hero-left h2 {
+          font-size: 20px;
+        }
+        .typing {
+          font-size: 15px;
+        }
+        form input[type="text"],
+        form input[type="email"],
+        form textarea {
+          font-size: 14px;
+          padding: 10px;
+        }
+        .project-img {
+          height: 130px;
+        }
+        .section-title {
+          font-size: 18px;
+        }
+      }
+
+      /* accessibility: focus styles */
+      a:focus,
+      button:focus,
+      input:focus,
+      textarea:focus {
+        outline: 3px solid rgba(108, 125, 255, 0.22);
+        outline-offset: 2px;
       }
     </style>
   </head>
@@ -186,7 +335,7 @@
           <a href="#about">About</a>
           <a href="#skills">Skills</a>
           <a href="#projects">Projects</a>
-          <a href="#stats">Statistics</a>
+          <!-- <a href="#stats">Statistics</a> -->
           <a href="#contact">Contact</a>
           <a href="<%= resumeUrl %>" class="btn" target="_blank">Resume</a>
         </nav>
@@ -196,7 +345,7 @@
     <!-- HERO -->
     <section class="hero" id="home">
       <div class="container hero-flex">
-        <div>
+        <div class="hero-left">
           <h2>Hello 👋, I'm <span class="accent"><%= name %></span></h2>
           <h3 class="typing"><%= role || "Fullstack Developer" %></h3>
 
@@ -207,47 +356,24 @@
           <div>
             <h3>Send Me a Message</h3>
 
-            <form action="/portfolio/<%= slug %>/contact" method="POST">
-              <input
-                type="text"
-                name="name"
-                placeholder="Your Name"
-                required
-                style="
-                  width: 100%;
-                  padding: 10px;
-                  margin: 8px 0;
-                  border-radius: 6px;
-                  border: none;
-                "
-              />
+            <form
+              action="/portfolio/<%= slug %>/contact"
+              method="POST"
+              aria-label="Send me a message"
+            >
+              <input type="text" name="name" placeholder="Your Name" required />
 
               <input
                 type="email"
                 name="email"
                 placeholder="Your Email"
                 required
-                style="
-                  width: 100%;
-                  padding: 10px;
-                  margin: 8px 0;
-                  border-radius: 6px;
-                  border: none;
-                "
               />
 
               <textarea
                 name="message"
                 placeholder="Your Message"
                 required
-                style="
-                  width: 100%;
-                  padding: 10px;
-                  margin: 8px 0;
-                  border-radius: 6px;
-                  border: none;
-                  height: 120px;
-                "
               ></textarea>
 
               <button
@@ -258,13 +384,21 @@
                 Send
               </button>
             </form>
-            <a href="<%= downloadUrl %>" class="btn outline" target="_blank"
+            <a
+              href="<%= downloadUrl %>"
+              class="btn outline"
+              target="_blank"
+              style="display: inline-block; margin-top: 10px"
               >Download CV</a
             >
           </div>
         </div>
 
-        <img src="<%= profileImageUrl %>" class="hero-img" alt="Profile" />
+        <img
+          src="<%= profileImageUrl || '/placeholder-profile.png' %>"
+          class="hero-img"
+          alt="Profile image of <%= name %>"
+        />
       </div>
     </section>
 
@@ -274,9 +408,9 @@
         <h2 class="section-title">About Me</h2>
         <p><%= about %></p>
 
-        <h3>Interests</h3>
+        <h3 style="margin-top: 16px">Interests</h3>
         <ul class="interests">
-          <% interests.forEach(i => { %>
+          <% (interests || []).forEach(i => { %>
           <li><%= i %></li>
           <% }) %>
         </ul>
@@ -289,7 +423,7 @@
         <h2 class="section-title">Skills</h2>
 
         <div class="skills-grid">
-          <% skills.forEach(skill => { %>
+          <% (skills || []).forEach(skill => { %>
           <span class="skill"><%= skill %></span>
           <% }) %>
         </div>
@@ -302,9 +436,13 @@
         <h2 class="section-title">Projects</h2>
 
         <div class="projects-grid">
-          <% projects.forEach(p => { %>
+          <% (projects || []).forEach(p => { %>
           <div class="project-card">
-            <img src="<%= p.image %>" class="project-img" />
+            <img
+              src="<%= p.imageUrl || '/placeholder-project.png' %>"
+              class="project-img"
+              alt="<%= p.title %>"
+            />
             <div class="project-content">
               <h3><%= p.title %></h3>
               <p><%= p.description %></p>
@@ -316,17 +454,6 @@
           </div>
           <% }) %>
         </div>
-      </div>
-    </section>
-
-    <!-- GITHUB STATS -->
-    <section class="section" id="stats">
-      <div class="container">
-        <h2 class="section-title">GitHub Statistics</h2>
-
-        <img src="<%= github.heatmap %>" class="stats-img" />
-        <img src="<%= github.streak %>" class="stats-img" />
-        <img src="<%= github.langs %>" class="stats-img" />
       </div>
     </section>
 
@@ -347,7 +474,9 @@
 
     <!-- FOOTER -->
     <footer class="footer">
-      <p><%= footer || '' %></p>
+      <div class="container">
+        <p style="margin: 0"><%= footer || '' %></p>
+      </div>
     </footer>
   </body>
 </html>

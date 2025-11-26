@@ -1,127 +1,563 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title><%= portfolio.name %></title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title><%= name %> — Portfolio</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
     <style>
+      :root {
+        --bg-a: #050816;
+        --bg-b: #0f1724;
+        --panel: rgba(255, 255, 255, 0.03);
+        --glass: rgba(255, 255, 255, 0.04);
+        --muted: #9aa7c7;
+        --accent1: #7c3aed;
+        --accent2: #06b6d4;
+        --glass-border: rgba(255, 255, 255, 0.06);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
       body {
-        background: #060b23;
+        height: 100%;
         margin: 0;
-        font-family: "Inter";
-        color: white;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        color: #e6eef8;
+        background: linear-gradient(180deg, var(--bg-a), var(--bg-b));
+        -webkit-font-smoothing: antialiased;
       }
-      .container {
-        max-width: 950px;
-        margin: auto;
-        padding: 20px;
+      a {
+        color: inherit;
       }
-      .header {
-        text-align: center;
-        animation: fade 1.2s ease;
+      .wrap {
+        max-width: 1200px;
+        margin: 32px auto;
+        padding: 16px;
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 24px;
+        align-items: start;
       }
-      .avatar {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
+      @media (max-width: 920px) {
+        .wrap {
+          grid-template-columns: 1fr;
+          padding: 12px;
+        }
+      }
+
+      /* Floating decorative blobs */
+      .blob {
+        position: fixed;
+        filter: blur(40px);
+        opacity: 0.14;
+        z-index: 0;
+        pointer-events: none;
+      }
+      .blob.one {
+        width: 420px;
+        height: 420px;
+        right: -120px;
+        top: -60px;
+        background: radial-gradient(circle at 30% 30%, #6d28d9, #0ea5a4);
+        transform: rotate(10deg);
+      }
+      .blob.two {
+        width: 300px;
+        height: 300px;
+        left: -80px;
+        bottom: -40px;
+        background: radial-gradient(circle at 70% 70%, #06b6d4, #7c3aed);
+      }
+
+      /* LEFT column - profile card */
+      .profile {
+        position: relative;
+        z-index: 2;
+        border-radius: 16px;
+        padding: 22px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
         overflow: hidden;
-        margin: auto;
-        border: 3px solid #4f46e5;
-        box-shadow: 0 0 25px #4f46e5;
       }
-      .avatar img {
+      .profile .portrait {
+        width: 100%;
+        height: 360px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 14px;
+        position: relative;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+      }
+      .portrait img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        display: block;
+        transform-origin: center;
+        transition: transform 0.7s cubic-bezier(0.2, 0.9, 0.2, 1);
       }
-      h1 {
-        font-size: 34px;
-        margin-top: 10px;
+      .portrait:hover img {
+        transform: scale(1.05) rotate(-1deg) translateY(-4px);
       }
 
-      .glow-box {
-        background: rgba(255, 255, 255, 0.05);
-        margin-top: 20px;
-        padding: 20px;
+      .name {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 6px 0;
+        letter-spacing: 0.2px;
+      }
+      .role {
+        color: var(--muted);
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+      .quote {
+        font-style: italic;
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 12px;
+      }
+
+      .meta-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .meta-item {
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: 13px;
+        color: var(--muted);
+        border: 1px solid rgba(255, 255, 255, 0.02);
+      }
+
+      .action-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .action {
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-block;
+        background: linear-gradient(90deg, var(--accent1), var(--accent2));
+        color: white;
+        box-shadow: 0 8px 20px rgba(13, 21, 43, 0.45);
+        transition: transform 0.18s;
+      }
+      .action:active {
+        transform: translateY(1px);
+      }
+
+      /* RIGHT column - content with cards */
+      .content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .card {
         border-radius: 14px;
-        box-shadow: 0 0 18px rgba(79, 70, 229, 0.5);
-        animation: glow 2s infinite alternate;
+        padding: 18px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 10px 30px rgba(2, 6, 23, 0.45);
+        overflow: hidden;
+        transform: translateY(6px);
+        transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.2, 1),
+          box-shadow 0.3s;
       }
-      @keyframes glow {
-        from {
-          box-shadow: 0 0 5px #4f46e5;
-        }
-        to {
-          box-shadow: 0 0 20px #4f46e5;
-        }
+      .card:hover {
+        transform: translateY(0);
+        box-shadow: 0 20px 60px rgba(2, 6, 23, 0.6);
       }
 
+      .section-title {
+        font-size: 18px;
+        margin: 0 0 12px 0;
+        font-weight: 700;
+        color: #e8f0ff;
+      }
+
+      /* ABOUT */
+      .about p {
+        margin: 0;
+        color: #c9d8f7;
+        line-height: 1.6;
+      }
+
+      /* INTERESTS / SKILLS as dots */
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .chip {
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 13px;
+        border: 1px solid rgba(255, 255, 255, 0.02);
+      }
+      .chip:hover {
+        color: white;
+        background: linear-gradient(90deg, var(--accent1), var(--accent2));
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(12, 22, 46, 0.45);
+      }
+
+      /* PROJECTS timeline cards with tilt */
       .projects {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         gap: 14px;
       }
-      .project {
-        background: #0b1231;
-        padding: 12px;
+      .proj {
         border-radius: 12px;
-        transition: 0.3s;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.015)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.02);
+        transition: transform 0.35s ease, box-shadow 0.25s;
       }
-      .project:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 0 25px #6366f1;
+      .proj:hover {
+        transform: translateY(-6px) rotate(-0.6deg);
+        box-shadow: 0 22px 50px rgba(2, 6, 23, 0.55);
       }
-      .project img {
+      .proj img {
         width: 100%;
-        height: 150px;
-        border-radius: 10px;
+        height: 160px;
         object-fit: cover;
+        display: block;
       }
-      @keyframes fade {
+      .proj .body {
+        padding: 12px;
+        color: #cfe0ff;
+      }
+      .proj h4 {
+        margin: 0 0 6px 0;
+        color: #ffffff;
+      }
+      .proj p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      /* CONTACT */
+      .contact-list a {
+        display: inline-block;
+        color: var(--accent2);
+        margin-right: 12px;
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      /* FOOTER */
+      footer {
+        text-align: center;
+        color: var(--muted);
+        padding: 20px 0;
+        font-size: 13px;
+      }
+
+      /* small screens */
+      @media (max-width: 920px) {
+        .profile .portrait {
+          height: 220px;
+        }
+      }
+
+      /* typed headline animation */
+      .typed {
+        color: white;
+        font-weight: 800;
+        display: inline-block;
+        white-space: nowrap;
+        overflow: hidden;
+        border-right: 0.12em solid rgba(255, 255, 255, 0.4);
+      }
+      @keyframes typing {
         from {
-          opacity: 0;
+          width: 0;
         }
         to {
-          opacity: 1;
+          width: 100%;
         }
+      }
+      @keyframes blink {
+        50% {
+          border-color: transparent;
+        }
+      }
+
+      .typed.animate {
+        width: 26ch;
+        animation: typing 2.4s steps(26, end), blink 0.8s step-end infinite;
       }
     </style>
   </head>
-
   <body>
-    <div class="container">
-      <div class="header">
-        <div class="avatar">
-          <img src="<%= portfolio.profileImageUrl %>" />
-        </div>
-        <h1><%= portfolio.name %></h1>
-        <p><%= portfolio.qualification %></p>
-      </div>
+    <!-- decorative blobs -->
+    <div class="blob one"></div>
+    <div class="blob two"></div>
 
-      <div class="glow-box">
-        <h2>About</h2>
-        <p><%= portfolio.about %></p>
-      </div>
-
-      <div class="glow-box">
-        <h2>Experience</h2>
-        <p><%= portfolio.experience %></p>
-      </div>
-
-      <div class="glow-box">
-        <h2>Projects</h2>
-
-        <div class="projects">
-          <% portfolio.projects.forEach(p => { %>
-          <div class="project">
-            <% if(p.imageUrl){ %><img src="<%= p.imageUrl %>" /><% } %>
-            <h4><%= p.title %></h4>
-            <p><%= p.description %></p>
+    <div class="wrap">
+      <!-- LEFT PROFILE -->
+      <aside class="profile">
+        <div class="portrait">
+          <% if (profileImageUrl) { %>
+          <img src="<%= profileImageUrl %>" alt="<%= name %>" />
+          <% } else { %>
+          <div
+            style="
+              width: 100%;
+              height: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: var(--muted);
+            "
+          >
+            No photo
           </div>
-          <% }) %>
+          <% } %>
         </div>
-      </div>
+
+        <div class="name"><%= name %></div>
+        <div class="role"><%= role || 'Fullstack Developer' %></div>
+        <div class="quote"><%= quote || '' %></div>
+
+        <div class="meta-list">
+          <div class="meta-item">
+            Qualification:
+            <strong style="color: #e6f0ff"> <%= qualification || '-' %></strong>
+          </div>
+          <div class="meta-item">
+            Location: <strong style="color: #e6f0ff">Remote</strong>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <a class="action" href="<%= resumeUrl %>" target="_blank"
+            >View Resume</a
+          >
+          <a class="action" href="<%= downloadUrl %>" target="_blank"
+            >Download CV</a
+          >
+        </div>
+
+        <div style="height: 12px"></div>
+
+        <div style="margin-top: 10px">
+          <div style="font-weight: 700; color: #e6f0ff; margin-bottom: 8px">
+            Interests
+          </div>
+          <div class="chips">
+            <% (interests || []).forEach(i => { %>
+            <div class="chip"><%= i %></div>
+            <% }) %> <% if(!(interests && interests.length)){ %>
+            <div class="chip">—</div>
+            <% } %>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px">
+          <div style="font-weight: 700; color: #e6f0ff; margin-bottom: 8px">
+            Skills
+          </div>
+          <div class="chips">
+            <% (skills || []).forEach(s => { %>
+            <div class="chip"><%= s %></div>
+            <% }) %> <% if(!(skills && skills.length)){ %>
+            <div class="chip">—</div>
+            <% } %>
+          </div>
+        </div>
+      </aside>
+
+      <!-- RIGHT CONTENT -->
+      <main class="content">
+        <!-- intro card with animated typed headline -->
+        <section class="card">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              gap: 12px;
+              flex-wrap: wrap;
+            "
+          >
+            <div style="flex: 1">
+              <div
+                style="font-size: 28px; font-weight: 800; margin-bottom: 6px"
+              >
+                <span class="typed" id="typed"
+                  ><%= role || 'Fullstack Developer' %></span
+                >
+              </div>
+              <div style="color: var(--muted)">
+                <%= about || 'No bio provided.' %>
+              </div>
+            </div>
+
+            <div style="min-width: 160px; text-align: right">
+              <div style="font-size: 12px; color: var(--muted)">
+                Quick Links
+              </div>
+              <div style="margin-top: 8px">
+                <a
+                  class="action"
+                  href="<%= resumeUrl %>"
+                  style="padding: 8px 10px; font-size: 13px"
+                  target="_blank"
+                  >Resume</a
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Projects -->
+        <section class="card">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
+            <h3 class="section-title">Projects</h3>
+            <div style="color: var(--muted); font-weight: 700">Recent Work</div>
+          </div>
+
+          <div class="projects" style="margin-top: 14px">
+            <% (projects || []).forEach((p, idx) => { %>
+            <article class="proj" data-idx="<%= idx %>">
+              <% if (p.imageUrl) { %>
+              <img src="<%= p.imageUrl %>" alt="<%= p.title %>" />
+              <% } else { %>
+              <div
+                style="
+                  height: 160px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  color: var(--muted);
+                "
+              >
+                No image
+              </div>
+              <% } %>
+              <div class="body">
+                <h4><%= p.title || 'Untitled' %></h4>
+                <p><%= p.description || '' %></p>
+                <div style="margin-top: 10px">
+                  <% if (p.github) { %><a
+                    href="<%= p.github %>"
+                    target="_blank"
+                    class="proj-link"
+                    >GitHub</a
+                  ><% } %> <% if (p.live) { %><a
+                    href="<%= p.live %>"
+                    target="_blank"
+                    class="proj-link"
+                    >Live</a
+                  ><% } %>
+                </div>
+              </div>
+            </article>
+            <% }) %>
+          </div>
+        </section>
+
+        <!-- Contact -->
+        <section class="card">
+          <h3 class="section-title">Contact</h3>
+          <div style="margin-top: 10px">
+            <p style="color: var(--muted)">
+              Reach out via the following links:
+            </p>
+            <div class="contact-list" style="margin-top: 10px">
+              <% if (contacts && contacts.length) { %> <% contacts.forEach(c =>
+              { %>
+              <a href="<%= c %>" target="_blank"><%= c %></a>
+              <% }) %> <% } else { %>
+              <div style="color: var(--muted)">No contact links added.</div>
+              <% } %>
+            </div>
+          </div>
+        </section>
+
+        <footer>
+          <%= footer || ("© " + new Date().getFullYear() + " " + name) %>
+        </footer>
+      </main>
     </div>
+
+    <script>
+      // typed animation trigger
+      (function () {
+        const el = document.getElementById("typed");
+        if (!el) return;
+        // add animate class after small delay to run CSS typing anim
+        setTimeout(() => el.classList.add("animate"), 200);
+
+        // subtle parallax tilt on project cards
+        document.querySelectorAll(".proj").forEach((card) => {
+          card.addEventListener("mousemove", (e) => {
+            const rect = card.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const dx = (e.clientX - cx) / 20;
+            const dy = (e.clientY - cy) / 20;
+            card.style.transform = `translateY(-6px) rotateX(${-dy}deg) rotateY(${dx}deg)`;
+          });
+          card.addEventListener("mouseleave", () => {
+            card.style.transform = "";
+          });
+        });
+      })();
+    </script>
   </body>
 </html>

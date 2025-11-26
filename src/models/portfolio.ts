@@ -16,6 +16,7 @@ export interface IPortfolio extends Document {
   qualification?: string;
   profileImageUrl?: string;
   resumeUrl?: string;
+  resumePath?: string;
   projects: IProject[];
   linkedin?: string;
   github?:
@@ -57,6 +58,7 @@ const PortfolioSchema = new Schema<IPortfolio>(
     qualification: { type: String, default: "" },
     profileImageUrl: { type: String, default: "" },
     resumeUrl: { type: String, default: "" },
+    resumePath: { type: String, default: "" },
     projects: { type: [ProjectSchema], default: [] },
     linkedin: { type: String, default: "" },
     github: { type: Schema.Types.Mixed, default: {} }, // can be object or string
